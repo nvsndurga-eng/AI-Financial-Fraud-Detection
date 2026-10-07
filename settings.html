@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Security Settings{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Security & Integrations</h1><p class="muted">Optional features are designed to fail safely when not configured.</p></div></div>
+<div class="grid-2">
+<section class="panel">
+<h2>Email alerts</h2><p>Status: <span class="badge {{ 'low' if email_enabled else 'medium' }}">{{ 'CONFIGURED' if email_enabled else 'NOT CONFIGURED' }}</span></p>
+<p class="small">Credentials are read from <code>.env</code> and never stored in the database.</p>
+</section>
+<section class="panel">
+<h2>SMS alerts</h2><p>Status: <span class="badge {{ 'low' if sms_enabled else 'medium' }}">{{ 'CONFIGURED' if sms_enabled else 'NOT CONFIGURED' }}</span></p>
+<p class="small">Uses Twilio when credentials are present.</p>
+</section>
+<section class="panel">
+<h2>Voice feature</h2><p>Browser speech input: <b>{{ 'Available' if voice.browser_speech else 'Unavailable' }}</b></p>
+<p>Python SpeechRecognition installed: <b>{{ 'Yes' if voice.python_speech_recognition_installed else 'No' }}</b></p>
+<p class="small">{{ voice.note }}</p>
+</section>
+<section class="panel">
+<h2>Fingerprint</h2><p>Mode: <span class="badge medium">{{ fingerprint.mode }}</span></p>
+<p>Hardware connected: <b>No</b></p>
+<p class="small">{{ fingerprint.note }}</p>
+</section>
+</div>
+{% endblock %}

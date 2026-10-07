@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Security Dashboard</h1><p class="muted">Real-time summary of locally recorded transactions.</p></div>
+  <a class="btn primary" href="{{ url_for('detect') }}">+ Check Transaction</a>
+</div>
+
+<div class="cards">
+  <div class="stat-card"><span>Total</span><strong>{{ stats.total }}</strong></div>
+  <div class="stat-card"><span>Legitimate</span><strong>{{ stats.legitimate }}</strong></div>
+  <div class="stat-card danger-card"><span>Fraudulent</span><strong>{{ stats.fraudulent }}</strong></div>
+  <div class="stat-card"><span>Suspicious</span><strong>{{ stats.suspicious }}</strong></div>
+</div>
+
+<div class="grid-2">
+  <section class="panel">
+    <h2>Fraud distribution</h2>
+    <canvas id="fraudChart"></canvas>
+  </section>
+  <section class="panel">
+    <h2>Model information</h2>
+    {% if metadata %}
+      <div class="info-list">
+        <div><span>Selected model</span><b>{{ metadata.selected_model }}</b></div>
+        <div><span>Dataset rows</span><b>{{ metadata.dataset_rows }}</b></div>
+        <div><span>Fraud rows</span><b>{{ metadata.fraud_rows }}</b></div>
+        <div><span>Legitimate rows</span><b>{{ metadata.legitimate_rows }}</b></div>
+      </div>
+    {% else %}
+      <p>No trained model metadata found. Run <code>python train_model.py</code>.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="panel">
+  <div class="section-head"><h2>Recent transactions</h2><a href="{{ url_for('history') }}">View all</a></div>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Amount</th><th>Type</th><th>Status</th><th>Risk</th><th>Score</th><th>Time</th></tr></thead>
+    <tbody>
+    {% for t in recent %}
+      <tr>
+        <td>{{ t.transaction_id }}</td><td>₹{{ "%.2f"|format(t.amount) }}</td><td>{{ t.transaction_type }}</td>
+        <td>{{ t.prediction }}</td><td><span class="badge {{ t.risk_level|lower }}">{{ t.risk_level }}</span></td>
+        <td>{{ t.fraud_probability }}%</td><td>{{ t.timestamp }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="empty">No transactions yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<form method="post" action="{{ url_for('reset_demo') }}" onsubmit="return confirm('Clear local transaction history?');">
+  <button class="btn ghost" type="submit">Clear local history</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+const stats = {{ stats|tojson }};
+new Chart(document.getElementById('fraudChart'), {
+  type: 'doughnut',
+  data: { labels: ['Legitimate', 'Fraudulent', 'Suspicious'], datasets: [{ data: [stats.legitimate, stats.fraudulent, stats.suspicious] }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+{% endblock %}

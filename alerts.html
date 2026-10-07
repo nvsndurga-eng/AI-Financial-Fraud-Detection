@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Alert Center</h1><p class="muted">Email and SMS delivery attempts are recorded locally.</p></div></div>
+<section class="panel">
+<div class="table-wrap"><table>
+<thead><tr><th>Transaction</th><th>Channel</th><th>Status</th><th>Message</th><th>Time</th></tr></thead>
+<tbody>
+{% for a in alerts %}
+<tr><td>{{ a.transaction_id }}</td><td>{{ a.channel }}</td><td>{{ a.status }}</td><td>{{ a.message }}</td><td>{{ a.timestamp }}</td></tr>
+{% else %}<tr><td colspan="5" class="empty">No alerts yet.</td></tr>{% endfor %}
+</tbody></table></div>
+</section>
+{% endblock %}

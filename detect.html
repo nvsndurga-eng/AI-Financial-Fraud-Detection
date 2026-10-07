@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Fraud Detection{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Transaction Analysis</h1><p class="muted">Enter transaction features and let the trained ML model evaluate risk.</p></div></div>
+
+<div class="grid-2">
+<section class="panel">
+<form method="post" id="fraudForm">
+  <div class="form-grid">
+    <div><label>Transaction amount (₹)</label><input name="amount" type="number" step="0.01" min="0" required value="{{ form.get('amount','') }}"></div>
+    <div>
+      <label>Transaction type</label>
+      <select name="transaction_type" required>
+        {% for x in ['PAYMENT','TRANSFER','CASH_OUT','DEBIT','CASH_IN'] %}
+          <option value="{{ x }}" {% if form.get('transaction_type') == x %}selected{% endif %}>{{ x }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div><label>Origin old balance</label><input name="oldbalanceOrg" type="number" step="0.01" min="0" required value="{{ form.get('oldbalanceOrg','') }}"></div>
+    <div><label>Origin new balance</label><input name="newbalanceOrig" type="number" step="0.01" min="0" required value="{{ form.get('newbalanceOrig','') }}"></div>
+    <div><label>Destination old balance</label><input name="oldbalanceDest" type="number" step="0.01" min="0" required value="{{ form.get('oldbalanceDest','') }}"></div>
+    <div><label>Destination new balance</label><input name="newbalanceDest" type="number" step="0.01" min="0" required value="{{ form.get('newbalanceDest','') }}"></div>
+  </div>
+  <button class="btn primary full" type="submit">Analyze Transaction</button>
+</form>
+
+<div class="voice-box">
+  <b>Voice input (optional)</b>
+  <p class="small">Browser speech-to-text convenience feature. It is not biometric authentication.</p>
+  <button type="button" class="btn secondary" onclick="startVoice()">🎙 Start voice input</button>
+  <span id="voiceStatus" class="small"></span>
+</div>
+</section>
+
+<section class="panel result-panel">
+{% if result %}
+  <div class="result-icon">{{ '⚠️' if 'Fraudulent' in result.prediction else '✓' }}</div>
+  <h2>{{ result.prediction }}</h2>
+  <div class="risk-score">{{ result.fraud_probability }}%</div>
+  <p>Fraud probability / risk score</p>
+  <span class="badge {{ result.risk_level|lower }}">{{ result.risk_level }} RISK</span>
+  <hr>
+  <div class="info-list">
+    <div><span>Transaction ID</span><b>{{ result.transaction_id }}</b></div>
+    <div><span>Amount</span><b>₹{{ "%.2f"|format(result.amount) }}</b></div>
+    <div><span>Type</span><b>{{ result.transaction_type }}</b></div>
+    <div><span>Date/time</span><b>{{ result.timestamp }}</b></div>
+  </div>
+  {% if result.alerts %}
+    <h3>Alert status</h3>
+    {% for a in result.alerts %}<div class="alert info">{{ a.channel }}: {{ a.status }} — {{ a.message }}</div>{% endfor %}
+  {% endif %}
+{% else %}
+  <div class="empty-state"><div>🛡️</div><h2>Ready to analyze</h2><p>Submit transaction details to receive a model-based risk assessment.</p></div>
+{% endif %}
+</section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function startVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const status = document.getElementById('voiceStatus');
+  if (!SpeechRecognition) { status.textContent = 'Speech recognition is not supported by this browser.'; return; }
+  const r = new SpeechRecognition();
+  r.lang = 'en-IN';
+  r.interimResults = false;
+  status.textContent = 'Listening...';
+  r.onresult = e => {
+    status.textContent = 'Captured: ' + e.results[0][0].transcript;
+  };
+  r.onerror = e => status.textContent = 'Voice input error: ' + e.error;
+  r.onend = () => { if (status.textContent === 'Listening...') status.textContent = 'Stopped.'; };
+  r.start();
+}
+</script>
+{% endblock %}

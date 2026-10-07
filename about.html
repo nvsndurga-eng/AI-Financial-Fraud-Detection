@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>About the Project</h1><p class="muted">AI-Based Financial Fraud Detection System — CSE-DS IPD.</p></div></div>
+<section class="panel">
+<h2>Purpose</h2>
+<p>The system demonstrates how supervised machine learning can classify transaction records into legitimate and suspicious/fraudulent classes and expose the result through a Flask web application.</p>
+<h2>Model</h2>
+{% if metadata %}
+<p><b>{{ metadata.selected_model }}</b> was selected during the training comparison.</p>
+<p>Metrics are stored in <code>model/model_metadata.json</code>. Accuracy is shown together with precision, recall, F1 and ROC-AUC because fraud datasets can be imbalanced.</p>
+{% else %}<p>Train the model first using <code>python train_model.py</code>.</p>{% endif %}
+<h2>Security note</h2>
+<p>This is an educational project, not a banking security product. Real deployment would require stronger authentication, encryption, access control, monitoring, secure secrets management and regulatory review.</p>
+</section>
+{% endblock %}
